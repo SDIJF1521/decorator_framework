@@ -1,0 +1,5 @@
+2025-09-15 13:08:33,183 - __main__ - INFO - Processing user registration: demo@example.com
+2025-09-15 13:08:33,286 - __main__ - INFO - User registration completed: {'status': 'success', 'user_id': 'USER001', 'email': 'demo@example.com'}
+2025-09-15 13:08:33,286 - __main__ - INFO - Processing new order: ORD001 - $99.99
+2025-09-15 13:08:33,490 - __main__ - INFO - Order ORD001 processed successfully
+2025-09-15 13:08:33,492 - __main__ - ERROR - Demo failed: Expected str, got dict
