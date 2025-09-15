@@ -1,5 +1,0 @@
-2025-09-15 13:10:01,505 - __main__ - INFO - Processing user registration: {'user_id': 'USER123', 'email': 'test@example.com', 'username': 'testuser'}
-2025-09-15 13:10:01,617 - __main__ - INFO - Registration completed: {'status': 'success', 'user_id': 'USER123', 'registered_at': '2025-09-15T13:10:01.617246'}
-2025-09-15 13:10:01,617 - __main__ - INFO - New order: {'order_id': 'ORD456', 'amount': 299.99, 'user_id': 'USER123'}
-2025-09-15 13:10:01,720 - __main__ - INFO - Order processed: ORD456
-2025-09-15 13:10:01,722 - __main__ - ERROR - Demo failed: 'ReTaskScheduler' object has no attribute 'match_patterns'

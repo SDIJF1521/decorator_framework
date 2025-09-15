@@ -1,6 +1,0 @@
-2025-09-15 13:11:27,083 - __main__ - INFO - Starting Production Framework...
-2025-09-15 13:11:27,087 - __main__ - INFO - [EVENT] User registration: {'user_id': 'U001', 'email': 'user@example.com'}
-2025-09-15 13:11:27,195 - __main__ - INFO - [EVENT] New order: {'order_id': 'O001', 'amount': 99.99}
-2025-09-15 13:11:27,300 - __main__ - ERROR - [REGEX DEMO] Error: ERROR:database
-2025-09-15 13:11:27,300 - __main__ - INFO - [REGEX DEMO] Success: SUCCESS:payment
-2025-09-15 13:11:33,311 - __main__ - INFO - Stopping Production Framework...

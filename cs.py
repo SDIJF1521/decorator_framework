@@ -58,7 +58,7 @@ async def main():
     print(await cd.handle("/add 10 20"))
         # 运行5秒观察定时任务
     print("\n运行中，观察定时任务...")
-    await asyncio.sleep(5)
+    await asyncio.sleep(30)
     # 触发正则任务
     rd = ReTaskScheduler()
     results = await rd.trigger("re_task","hello")
