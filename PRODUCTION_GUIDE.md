@@ -978,7 +978,7 @@ if __name__ == "__main__":
 
 ## 📞 支持与联系
 
-- **文档**: [完整文档]([https://github.com/your-org/decorator-framework](https://github.com/SDIJF1521/decorator_framework/blob/master/README.md))
+- **文档**: [完整文档]([https://github.com/your-org/decorator-framework](https://github.com/SDIJF1521/decorator_framework/blob/master/README.md)
 - **问题反馈**: [GitHub Issues](https://github.com/your-org/decorator-framework/issues)
 - **邮件**: 839682307@qq.com
 - **Slack**: #decorator-framework on your-org.slack.com
