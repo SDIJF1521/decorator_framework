@@ -1,6 +1,6 @@
 import asyncio
-from decorators.on import on, command_on, time_on
-from nucleus.dispatcher import EventDispatcher, DecisionCommandDispatcher,  TimeTaskScheduler
+from decorators.on import on, command_on, time_on, re_on
+from nucleus.dispatcher import EventDispatcher, DecisionCommandDispatcher,  TimeTaskScheduler,  ReTaskScheduler
 
 time_scheduler = TimeTaskScheduler()
 
@@ -36,6 +36,17 @@ async def heartbeat():
 async def cleanup():
     print("执行临时文件清理...")
 
+# 正则任务
+@re_on(
+    name="re_task",
+    content="hello",
+    pattern=r"^hello$",
+    priority=1
+).execute()
+async def re_task():
+    print("hello")
+    return "he"
+
 async def main():
     await time_scheduler.start()
     # 触发事件
@@ -45,9 +56,16 @@ async def main():
     # 处理命令
     cd = DecisionCommandDispatcher()
     print(await cd.handle("/add 10 20"))
-        # 运行30秒观察定时任务
+        # 运行5秒观察定时任务
     print("\n运行中，观察定时任务...")
-    await asyncio.sleep(30)
+    await asyncio.sleep(5)
+    # 触发正则任务
+    rd = ReTaskScheduler()
+    results = await rd.trigger("re_task","hello")
+    if results:
+        print(f"正则任务返回: {results}")
+    else:
+        print("正则任务未触发")
 
     # 停止调度器
     await time_scheduler.stop()

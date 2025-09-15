@@ -78,23 +78,23 @@ def time_on(
             Myclass.ClassNucleus(random_class_name, (object,), attrs)
     return TimeOn(name)
 
-# # @re_on装饰器(普通事件注册，支持同步/异步函数)
-# def re_on(
-#     name: str,
-#     content: str,
-#     pattern: object,
-#     priority: int = 1,
-# )-> RegistryDecoratorTemplate:
-#     class ReOn(RegistryDecoratorTemplate):
-#         def _register_class(self) -> None:
-#             random_class_name = f"ReHandler_{uuid.uuid4().hex[8]}"
-#             attrs = {
-#                 "fun_name": self.name,
-#                 "priority": priority,
-#                 'content': content,
-#                 "rule": pattern,
-#                 "execute": staticmethod(self.fun)  # 支持异步函数
-#             }
-#             Myclass.ClassNucleus(random_class_name, (object,), attrs)
-#
-#     return ReOn(name)
+# @re_on装饰器(普通事件注册，支持同步/异步函数)
+def re_on(
+    name: str,
+    content: str,
+    pattern: object,
+    priority: int = 1,
+)-> RegistryDecoratorTemplate:
+    class ReOn(RegistryDecoratorTemplate):
+        def _register_class(self) -> None:
+            random_class_name = f"ReHandler_{uuid.uuid4().hex[8]}"
+            attrs = {
+                "fun_name": self.name,
+                "priority": priority,
+                "content": content,
+                "rule": pattern,
+                "execute": staticmethod(self.fun)  # 支持异步函数
+            }
+            Myclass.ClassNucleus(random_class_name, (object,), attrs)
+
+    return ReOn(name)

@@ -198,6 +198,114 @@ class TimeTaskScheduler:
             await asyncio.gather(self.task, return_exceptions=True)
             print("定时任务调度器已停止")
 
-# # 正则规则调度器
-# class ReTaskScheduler:
-#     pass
+# 正则规则调度器
+class ReTaskScheduler:
+    """正则任务调度器：处理re_on装饰器注册的任务"""
+    
+    def __init__(self):
+        self.registry = ClassNucleus.get_registry()
+    
+    def _get_regex_handlers(self) -> list:
+        """获取所有正则任务处理器"""
+        handlers = []
+        for name, cls in self.registry.items():
+            if hasattr(cls, 'rule'):
+                handlers.append({
+                    'name': getattr(cls, 'fun_name', name),
+                    'pattern': cls.rule,
+                    'handler': cls.execute,
+                    'priority': getattr(cls, 'priority', 1)
+                })
+        
+        # 按优先级排序（数字越小优先级越高）
+        handlers.sort(key=lambda x: x['priority'])
+        return handlers
+    
+    async def trigger(self, task_name: str, content: str) -> list[str]:
+        """
+        触发正则任务
+        
+        Args:
+            task_name: 任务名称
+            content: 要匹配的内容
+            
+        Returns:
+            匹配成功的任务执行结果列表
+        """
+        handlers = self._get_regex_handlers()
+        results = []
+        
+        for handler_info in handlers:
+            if handler_info['name'] == task_name:
+                pattern = handler_info['pattern']
+                
+                # 检查正则表达式匹配
+                regex_matches = False
+                try:
+                    if isinstance(pattern, str):
+                        regex_matches = bool(re.search(pattern, content))
+                    else:
+                        regex_matches = bool(pattern.search(content)) if hasattr(pattern, 'search') else False
+                except Exception as e:
+                    print(f"正则表达式匹配错误: {e}")
+                
+                if regex_matches:
+                    try:
+                        handler = handler_info['handler']
+                        if asyncio.iscoroutinefunction(handler):
+                            result = await handler()
+                        else:
+                            result = handler()
+                        results.append(str(result) if result is not None else f"任务 {task_name} 执行完成")
+                        print(f"正则任务触发成功: {task_name}")
+                    except Exception as e:
+                        error_msg = f"任务 {task_name} 执行失败: {e}"
+                        print(error_msg)
+                        results.append(error_msg)
+        
+        return results
+    
+    async def match_content(self, content: str) -> list[str]:
+        """
+        匹配所有注册的正则任务
+        
+        Args:
+            content: 要匹配的内容
+            
+        Returns:
+            所有匹配成功的任务执行结果列表
+        """
+        handlers = self._get_regex_handlers()
+        results = []
+        
+        for handler_info in handlers:
+            pattern = handler_info['pattern']
+            
+            # 检查内容是否匹配正则表达式
+            regex_matches = False
+            try:
+                if isinstance(pattern, str):
+                    regex_matches = bool(re.search(pattern, content))
+                else:
+                    regex_matches = bool(pattern.search(content)) if hasattr(pattern, 'search') else False
+            except Exception as e:
+                print(f"正则表达式匹配错误: {e}")
+            
+            if regex_matches:
+                try:
+                    handler = handler_info['handler']
+                    task_name = handler_info['name']
+                    
+                    if asyncio.iscoroutinefunction(handler):
+                        result = await handler()
+                    else:
+                        result = handler()
+                    
+                    results.append(str(result) if result is not None else f"任务 {task_name} 执行完成")
+                    print(f"正则任务匹配成功: {task_name}")
+                except Exception as e:
+                    error_msg = f"任务 {handler_info['name']} 执行失败: {e}"
+                    print(error_msg)
+                    results.append(error_msg)
+        
+        return results
