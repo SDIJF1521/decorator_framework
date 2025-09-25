@@ -1,0 +1,38 @@
+# 包含主要的包文件
+recursive-include decorators *.py
+recursive-include nucleus *.py
+recursive-include tests *.py
+
+# 包含文档
+include README.md
+include LICENSE
+include requirements.txt
+include requirements-dev.txt
+include MANIFEST.in
+
+# 包含英文文档
+include EN_README.md
+include API_REFERENCE_EN.md
+include BEST_PRACTICES_EN.md
+include PRODUCTION_DEPLOYMENT_GUIDE_EN.md
+include RUN_TESTS_EN.md
+
+# 包含中文文档
+include API_REFERENCE.md
+include BEST_PRACTICES.md
+include PRODUCTION_DEPLOYMENT_GUIDE.md
+include RUN_TESTS.md
+
+# 包含配置文件
+include .gitignore
+include setup.py
+
+# 排除不需要的文件
+global-exclude *.pyc
+global-exclude __pycache__
+global-exclude *.pyo
+global-exclude *.so
+global-exclude *.dylib
+global-exclude *.pyd
+# 只排除根目录下的旧测试文件，不包含tests/文件夹中的测试文件
+global-exclude ./test_*.py
