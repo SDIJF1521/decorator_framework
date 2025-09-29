@@ -1,14 +1,14 @@
 # 装饰器框架生产环境部署指南
 
-## 🌐 文档语言
+## 文档语言
 - [English Version](PRODUCTION_DEPLOYMENT_GUIDE_EN.md) - 英文生产部署指南
 - [中文版本](PRODUCTION_DEPLOYMENT_GUIDE.md) - 当前文档（中文生产部署）
 
-## 🎯 框架概述
+## 框架概述
 
 这是一个基于装饰器的轻量级异步事件驱动框架，提供事件处理、定时任务、命令处理和正则表达式匹配四大核心功能。框架完全基于实际的 `decorators/on.py` 和 `nucleus/dispatcher.py` 实现。
 
-## 📦 核心功能
+## 核心功能
 
 ### 1. 事件系统 (@on)
 ```python
@@ -51,7 +51,7 @@ async def detect_errors(error_message):
     return f"检测到错误: {error_message}"
 ```
 
-## 🚀 快速开始
+## 快速开始
 
 ### 1. 项目结构
 ```
@@ -129,7 +129,45 @@ dispatcher = DecisionCommandDispatcher()
 result = await dispatcher.handle("/backup full")
 ```
 
-## 🏗️ 生产环境部署
+## 生产环境部署
+
+### 优先级队列配置
+
+#### 1. 资源控制配置
+```python
+from nucleus.data.priority_queue import ResourceController
+
+# 生产环境资源控制
+RESOURCE_CONTROLLER = ResourceController(
+    max_concurrent=int(os.getenv("MAX_CONCURRENT_TASKS", "100")),
+    timeout=int(os.getenv("RESOURCE_TIMEOUT", "30"))
+)
+
+# 事件调度器配置（带优先级队列）
+EVENT_DISPATCHER = EventDispatcher(
+    max_queue_size=int(os.getenv("MAX_EVENT_QUEUE_SIZE", "1000")),
+    priority_levels=int(os.getenv("PRIORITY_LEVELS", "10"))
+)
+```
+
+#### 2. 队列监控和告警
+```python
+# 队列监控配置
+QUEUE_MONITORING = {
+    'enabled': os.getenv("QUEUE_MONITORING_ENABLED", "true").lower() == "true",
+    'alert_threshold': int(os.getenv("QUEUE_ALERT_THRESHOLD", "800")),
+    'stats_interval': int(os.getenv("QUEUE_STATS_INTERVAL", "60"))
+}
+
+# 队列统计函数
+async def monitor_queue_health():
+    """监控队列健康状况"""
+    stats = EVENT_DISPATCHER.get_event_queue_stats()
+    if stats['queue_size'] > QUEUE_MONITORING['alert_threshold']:
+        logging.warning(f"事件队列积压: {stats['queue_size']} 任务")
+        # 发送告警通知
+        await send_alert(f"队列积压告警: {stats['queue_size']} 任务等待处理")
+```
 
 ### 1. 配置文件 (config.py)
 ```python
@@ -145,11 +183,18 @@ FRAMEWORK_CONFIG = {
     'scheduler_enabled': os.getenv("SCHEDULER_ENABLED", "true").lower() == "true",
     'heartbeat_interval': int(os.getenv("HEARTBEAT_INTERVAL", "30")),
     'log_level': os.getenv("LOG_LEVEL", "INFO"),
+    'max_concurrent_tasks': int(os.getenv("MAX_CONCURRENT_TASKS", "100")),
+    'max_event_queue_size': int(os.getenv("MAX_EVENT_QUEUE_SIZE", "1000")),
+    'queue_monitoring_enabled': os.getenv("QUEUE_MONITORING_ENABLED", "true").lower() == "true",
 }
 
 # 实际使用的模块
 from nucleus.dispatcher import EventDispatcher, DecisionCommandDispatcher, TimeTaskScheduler
+from nucleus.data.priority_queue import ResourceController
 from decorators.on import on, time_on, command_on, re_on
+
+# 初始化事件调度器（内部已包含资源控制器）
+event_dispatcher = EventDispatcher()
 ```
 
 ### 2. 生产级日志配置

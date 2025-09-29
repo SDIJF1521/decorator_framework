@@ -14,7 +14,7 @@ with open("requirements.txt", "r", encoding="utf-8") as f:
 
 setup(
     name="decorator-framework",
-    version="1.0.4",  # 更新版本号 - 修复参数解析问题
+    version="1.0.5",  # 更新版本号 - 修复文档验证问题
     author="YGXB",  # 请替换为你的名字
     author_email="839682307@qq.com",  # 请替换为你的邮箱
     description="A Python decorator framework for event-driven programming",

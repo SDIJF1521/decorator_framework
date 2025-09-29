@@ -1,14 +1,14 @@
 ---
-**Version**: 2.1.0  
-**Last Updated**: 2025-01-15  
-**Document Status**: ✅ API Documentation Fixed - Based on Actual Code Framework
+**Version**: 2.2.0  
+**Last Updated**: 2025-01-16  
+**Document Status**: ✅ API Documentation Updated - Includes Priority Queue and Integration Examples
 ---
 
-**⚠️ Important**: All decorators must use the `.execute()` method!
+**Important**: All decorators must use the `.execute()` method!
 
 # Decorator Framework API Reference
 
-## 📋 Decorator API
+## Decorator API
 
 ### @on Event Decorator
 
@@ -129,15 +129,21 @@ await dispatcher.trigger_event("error_detector", "ERROR:database_timeout")
 
 ### EventDispatcher Event Scheduler
 
-Manages event registration and triggering.
+Manages event registration and triggering, supports priority queue.
 
 ```python
 from nucleus.dispatcher import EventDispatcher
 
 dispatcher = EventDispatcher()
 
-# Trigger event
-await dispatcher.trigger_event(event_name: str, *args, **kwargs) -> Any
+# Trigger event (supports priority)
+await dispatcher.trigger_event(event_name: str, priority: int = 5, data: dict = None) -> Any
+
+# Register event handler
+dispatcher.register_event(event_name: str, handler_class)
+
+# Get event queue statistics
+stats = dispatcher.get_event_queue_stats()
 
 # Get registered events
 from nucleus.Myclass import ClassNucleus
@@ -146,19 +152,31 @@ ClassNucleus.get_registry() -> dict
 
 **Methods:**
 - `trigger_event()`: Triggers event and executes registered handlers
+- `register_event()`: Register event handler
+- `get_event_queue_stats()`: Get event queue statistics
 - `ClassNucleus.get_registry()`: Returns all registered classes
 
 ### DecisionCommandDispatcher Command Scheduler
 
-Handles command parsing and execution.
+Handles command parsing and execution, supports priority queue and decision tree.
 
 ```python
 from nucleus.dispatcher import DecisionCommandDispatcher
+from nucleus.data.tree import Tree
 
 dispatcher = DecisionCommandDispatcher()
 
-# Process command
-await dispatcher.handle(message: str) -> str
+# Set decision tree
+dispatcher.tree = Tree()
+
+# Register command handler
+dispatcher.register_command(command_name: str, handler_class)
+
+# Process command (supports priority)
+await dispatcher.handle(message: str, priority: int = 5) -> str
+
+# Get command queue statistics
+stats = dispatcher.get_command_queue_stats()
 
 # Get registered commands
 from nucleus.Myclass import ClassNucleus
@@ -167,7 +185,7 @@ ClassNucleus.get_registry() -> dict
 
 ### TimeTaskScheduler Scheduled Task Scheduler
 
-Manages scheduled task execution.
+Manages scheduled task execution, supports priority queue and resource control.
 
 ```python
 from nucleus.dispatcher import TimeTaskScheduler
@@ -180,8 +198,66 @@ await scheduler.start()
 # Stop scheduler
 await scheduler.stop()
 
+# Get task queue statistics
+stats = scheduler.get_queue_stats()
+
 # Get task list
 scheduler.time_tasks -> list
+
+# Access internal priority queue
+scheduler.task_queue -> PriorityQueue
+```
+
+## 📊 Priority Queue API
+
+### PriorityQueue Priority Queue
+
+Thread-safe priority queue implementation supporting task priority management and resource limits.
+
+```python
+from nucleus.data.priority_queue import PriorityQueue, ResourceController
+
+# Create priority queue
+queue = PriorityQueue(maxsize=100, resource_limit=50)
+
+# Add task (priority: 1 highest, 10 lowest)
+success = queue.put(item, priority=5)
+
+# Get task
+item = queue.get()
+
+# Get queue statistics
+stats = queue.get_stats()
+```
+
+**Parameters:**
+- `maxsize`: Queue maximum capacity (optional)
+- `resource_limit`: Resource limit quantity (optional)
+
+**Methods:**
+- `put(item, priority=5)`: Add task to queue
+- `get()`: Get highest priority task
+- `get_stats()`: Return queue statistics
+- `qsize()`: Return queue size
+
+### ResourceController Resource Controller
+
+Manages queue resource usage to prevent resource exhaustion.
+
+```python
+from nucleus.data.priority_queue import ResourceController
+
+# Create resource controller
+controller = ResourceController(limit=100)
+
+# Request resource
+if controller.acquire_resource():
+    try:
+        # Execute task
+        pass
+    finally:
+        # Release resource
+        controller.release_resource()
 ```
 
 ## 📊 Logging Configuration

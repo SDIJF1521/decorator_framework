@@ -1,10 +1,10 @@
 # Decorator Framework Production Deployment Guide
 
-## 🎯 Framework Overview
+## Framework Overview
 
 This is a production-grade asynchronous event-driven framework based on decorators, providing four core functions: event handling, scheduled tasks, command processing, and regular expression matching. The framework is completely based on the actual implementation of `decorators/on.py` and `nucleus/dispatcher.py`.
 
-## 📦 Core Features
+## Core Features
 
 ### 1. Event System (@on)
 ```python
@@ -47,7 +47,7 @@ async def detect_errors(error_message):
     return f"Error detected: {error_message}"
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Project Structure
 ```
@@ -125,7 +125,45 @@ dispatcher = DecisionCommandDispatcher()
 result = await dispatcher.handle("/backup full")
 ```
 
-## 🏗️ Production Environment Deployment
+## Production Environment Deployment
+
+### Priority Queue Configuration
+
+#### 1. Resource Control Configuration
+```python
+from nucleus.data.priority_queue import ResourceController
+
+# Production environment resource control
+RESOURCE_CONTROLLER = ResourceController(
+    max_concurrent=int(os.getenv("MAX_CONCURRENT_TASKS", "100")),
+    timeout=int(os.getenv("RESOURCE_TIMEOUT", "30"))
+)
+
+# Event dispatcher configuration (with priority queue)
+EVENT_DISPATCHER = EventDispatcher(
+    max_queue_size=int(os.getenv("MAX_EVENT_QUEUE_SIZE", "1000")),
+    priority_levels=int(os.getenv("PRIORITY_LEVELS", "10"))
+)
+```
+
+#### 2. Queue Monitoring and Alerting
+```python
+# Queue monitoring configuration
+QUEUE_MONITORING = {
+    'enabled': os.getenv("QUEUE_MONITORING_ENABLED", "true").lower() == "true",
+    'alert_threshold': int(os.getenv("QUEUE_ALERT_THRESHOLD", "800")),
+    'stats_interval': int(os.getenv("QUEUE_STATS_INTERVAL", "60"))
+}
+
+# Queue health monitoring function
+async def monitor_queue_health():
+    """Monitor queue health status"""
+    stats = EVENT_DISPATCHER.get_event_queue_stats()
+    if stats['queue_size'] > QUEUE_MONITORING['alert_threshold']:
+        logging.warning(f"Event queue backlog: {stats['queue_size']} tasks")
+        # Send alert notification
+        await send_alert(f"Queue backlog alert: {stats['queue_size']} tasks waiting for processing")
+```
 
 ### 1. Configuration File (config.py)
 ```python
@@ -141,11 +179,18 @@ FRAMEWORK_CONFIG = {
     'scheduler_enabled': os.getenv("SCHEDULER_ENABLED", "true").lower() == "true",
     'heartbeat_interval': int(os.getenv("HEARTBEAT_INTERVAL", "30")),
     'log_level': os.getenv("LOG_LEVEL", "INFO"),
+    'max_concurrent_tasks': int(os.getenv("MAX_CONCURRENT_TASKS", "100")),
+    'max_event_queue_size': int(os.getenv("MAX_EVENT_QUEUE_SIZE", "1000")),
+    'queue_monitoring_enabled': os.getenv("QUEUE_MONITORING_ENABLED", "true").lower() == "true",
 }
 
 # Actual modules used
 from nucleus.dispatcher import EventDispatcher, DecisionCommandDispatcher, TimeTaskScheduler
+from nucleus.data.priority_queue import ResourceController
 from decorators.on import on, time_on, command_on, re_on
+
+# Initialize event dispatcher (includes internal resource controller)
+event_dispatcher = EventDispatcher()
 ```
 
 ### 2. Production-grade Log Configuration

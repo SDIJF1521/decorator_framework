@@ -1,2 +1,9 @@
-cython>=0.29.0
-setuptools>=40.0
+# 装饰器框架依赖
+# 主要使用Python标准库，无额外第三方依赖
+
+# 开发依赖（可选）
+# pytest>=7.0.0
+# pytest-asyncio>=0.21.0
+# black>=22.0.0
+# flake8>=5.0.0
+# mypy>=1.0.0

@@ -1,19 +1,66 @@
-# Decorator Framework
+# 🎭 Decorator Framework
 
-A lightweight, easy-to-use Python decorator framework supporting event triggering, command processing, scheduled tasks, and regular expression matching.
+A powerful Python decorator framework providing **dependency injection**, **call chain interception**, **task management**, and **priority queue** advanced features. Supports event triggering, command processing, scheduled tasks, and regular expression matching.
 
-## 🌐 Documentation Languages
+## 1. Framework Core Features
+
+### Dependency Injection System
+- **Automatic Service Registration**: Register services automatically using `@service()` decorator
+- **Interface Mapping**: Support interface to implementation class mapping
+- **Lifecycle Management**: Support singleton and transient lifecycles
+- **Constructor Injection**: Automatic dependency resolution and injection
+
+### Call Chain System
+- **Interceptor Pattern**: Support before, after, and exception interception
+- **Context Passing**: Pass context information in the call chain
+- **Performance Monitoring**: Built-in logging and metrics interceptors
+- **Async Support**: Full support for async function call chains
+
+### Task Management System
+- **Task Scheduling**: Support timed and delayed task execution
+- **Task Cancellation**: Provide graceful task cancellation mechanism
+- **Concurrency Control**: Support maximum concurrency limits
+- **Task Statistics**: Real-time monitoring of task execution status
+
+### Priority Queue System
+- **Intelligent Scheduling**: Task scheduling based on priority
+- **Resource Control**: Memory and concurrency limits
+- **Dynamic Adjustment**: Adjust queue parameters at runtime
+- **Statistical Monitoring**: Detailed queue status statistics
+
+## Documentation Languages
 - [English Version](EN_README.md) - Current Document (English)
 - [中文版本](README.md) - Chinese Documentation
 
-## 🚀 Quick Start
+## Quick Start
 
-### 1. Install Dependencies
+### Important: Decorator Usage
+**All decorators must use the `.execute()` method!**
+
+✅ **Correct usage:**
+```python
+@on("event_name").execute()  # ✅ Correct - must call .execute()
+def handler_function(data):
+    return f"Processing result: {data}"
+```
+
+❌ **Incorrect usage:**
+```python
+@on("event_name")  # ❌ Error - missing .execute()
+def handler_function(data):
+    return f"Processing result: {data}"
+```
+
+### 1. Install Framework
 ```bash
+# Install from PyPI (recommended)
+pip install decorator-framework
+
+# Or install from source
 pip install -r requirements.txt
 ```
 
-### ⚠️ Important: Decorator Usage
+### Important: Decorator Usage
 **All decorators must use the `.execute()` method!**
 
 ✅ **Correct usage:**
@@ -30,37 +77,125 @@ def handler_function(data):
     return f"Processing result: {data}"
 ```
 
-### 2. Basic Usage
-The framework provides four core decorators:
-- `@on()` - Regular event registration
-- `@command_on()` - Command registration (supports decision tree)
-- `@time_on()` - Scheduled tasks
-- `@re_on()` - Regular expression tasks
+### 2. Framework Core Features Demo
 
-### 3. Project Structure
+#### Dependency Injection System
+```python
+from nucleus import service, inject, get_dependency_container
+from typing import Protocol
+
+# Define interface
+class IDataService(Protocol):
+    async def get_data(self) -> str:
+        ...
+
+# Register service (singleton mode)
+@service('singleton')
+class DataService(IDataService):
+    async def get_data(self) -> str:
+        return "Hello from DataService!"
+
+# Use dependency injection
+@inject
+async def process_data(data_service: IDataService) -> str:
+    return await data_service.get_data()
+
+# Usage example
+async def test_di():
+    result = await process_data()  # Auto inject dependency
+    print(result)  # Output: Hello from DataService!
+```
+
+#### Call Chain System
+```python
+from nucleus import get_call_chain, ChainInterceptor, ChainContext
+
+class LoggingInterceptor(ChainInterceptor):
+    async def before_execute(self, context: ChainContext) -> None:
+        print(f"Starting execution: {context.function_name}")
+    
+    async def after_execute(self, context: ChainContext) -> None:
+        print(f"Execution completed: {context.function_name}")
+
+# Use call chain
+chain = get_call_chain()
+chain.add_interceptor(LoggingInterceptor())
+
+@chain.decorate
+def my_function():
+    return "processing result"
+```
+
+#### Task Management System
+```python
+from nucleus import get_task_manager, TaskCancellationToken
+
+async def long_running_task(token: TaskCancellationToken) -> str:
+    for i in range(10):
+        token.throw_if_cancelled()  # Check cancellation signal
+        await asyncio.sleep(0.1)
+    return "Task completed"
+
+# Use task manager
+task_manager = get_task_manager()
+task = await task_manager.create_task(long_running_task())
+result = await task.wait_for_completion()
+```
+
+### 3. Decorator Usage
+The framework provides four core decorators, all decorators must use `.execute()` method:
+- `@on().execute()` - Regular event registration
+- `@command_on().execute()` - Command registration (supports decision tree)
+- `@time_on().execute()` - Scheduled tasks
+- `@re_on().execute()` - Regular expression tasks
+
+### 4. Project Structure
 ```
 decorator_framework/
-├── decorators/
-│   ├── __init__.py    # Decorator module initialization
-│   └── on.py          # Four decorator implementations
-├── nucleus/
-│   ├── __init__.py
-│   ├── dispatcher.py   # Four dispatchers
-│   └── Myclass.py     # Core classes
-├── tests/
-│   ├── __init__.py
+├── decorators/          # Core decorator modules
+│   ├── __init__.py     # Package initialization
+│   └── on.py           # Four decorator implementations
+├── nucleus/            # Core framework modules
+│   ├── __init__.py     # Package initialization, exports core classes
+│   ├── dispatcher.py   # Four dispatcher implementations
+│   ├── Myclass.py      # Core classes
+│   ├── core/           # Core functionality submodules
+│   │   ├── __init__.py
+│   │   ├── chain.py    # Call chain system
+│   │   ├── di.py       # Dependency injection system
+│   │   ├── integration.py # Framework integration
+│   │   └── task_manager.py # Task management
+│   └── data/           # Data structure submodules
+│       ├── __init__.py
+│       ├── data_structure.py # Basic data structures
+│       ├── priority_queue.py # Priority queue and resource control
+│       └── tree.py      # Decision tree implementation
+├── examples/           # Usage examples
+│   ├── command_on_di_example.py    # Command + dependency injection example
+│   ├── core_integration_demo.py    # Core integration demonstration
+│   ├── on_di_example.py           # Decorator + dependency injection example
+│   ├── priority_queue_example.py  # Priority queue example
+│   ├── quick_start_example.py     # Quick start example
+│   └── scheduler_integration_demo.py # Scheduler integration demonstration
+├── tests/              # Test modules
+│   ├── __init__.py    # Test package initialization
 │   ├── test_basic.py  # Basic functionality tests
-│   └── test_integration.py # Integration tests
-├── test_timer_demo.py  # Scheduled task example
-├── test_re_decision_demo.py  # Regex + decision tree example
-├── cs.py              # Comprehensive example
-├── requirements.txt   # Project dependencies
-└── README.md
+│   ├── test_core_integration.py # Core integration tests
+│   ├── test_integration.py      # Integration tests
+│   └── test_priority_queue.py   # Priority queue tests
+├── complete_demo.py   # Complete functionality demonstration
+├── setup.py           # Installation configuration
+├── requirements.txt   # Dependency list
+├── requirements-dev.txt # Development dependencies
+├── MANIFEST.in        # Package manifest configuration
+├── .gitignore         # Git ignore configuration
+├── LICENSE            # MIT license
+└── Documentation (EN/CN) # Complete bilingual documentation system
 ```
 
-## 📋 Complete Examples
+### 5. Quick Examples
 
-### 1. Events and Commands Example
+#### Events and Commands Example
 ```python
 import asyncio
 from decorators.on import on, command_on
@@ -93,9 +228,40 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+
+### 5. Complete Feature Demonstration
+Run `complete_demo.py` to see the complete framework feature demonstration:
+
+```bash
+python complete_demo.py
 ```
 
-### 2. Scheduled Tasks Example
+This demo includes:
+- Dependency injection system demonstration
+- Call chain interceptor functionality
+- Task management and cancellation
+- Priority queue intelligent scheduling
+- Event system priority control
+- Command system decision tree
+- Regular expression task matching
+- Async function support
+- Resource limit management
+- Queue statistics monitoring
+```
+
+### 6. Run Tests
+```bash
+# Run all tests
+python -m pytest tests/ -v
+
+# Run specific test modules
+python -m pytest tests/test_basic.py -v
+python -m pytest tests/test_integration.py -v
+python -m pytest tests/test_priority_queue.py -v
+```
+
+### 3. Scheduled Tasks Example
 ```python
 import asyncio
 from decorators.on import time_on
@@ -123,7 +289,28 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-## 🔧 Advanced Usage
+## 2. Advanced Features in Detail
+
+### Priority Queue System Integration
+The framework integrates a priority queue system, supporting task priority management and resource control:
+
+```python
+from nucleus import PriorityQueue, ResourceController
+from nucleus.dispatcher import EventDispatcher, DecisionCommandDispatcher, TimeTaskScheduler
+
+# Create event dispatcher with priority support
+event_dispatcher = EventDispatcher()
+
+# Register event handler (supports priority)
+event_dispatcher.register_event("user_action", EventHandlerExample)
+
+# Trigger high priority event
+await event_dispatcher.trigger_event("user_action", priority=1, data={"user_id": 123})
+
+# Get queue statistics
+stats = event_dispatcher.get_event_queue_stats()
+print(f"Event queue statistics: {stats}")
+```
 
 ### Regular Expression Tasks (@re_on)
 Trigger tasks by matching text content with regular expressions:
@@ -206,7 +393,7 @@ async def async_timed_task():
     print("Async scheduled task execution completed")
 ```
 
-## 📊 Parameter Reference
+## 3. Parameter Reference
 
 ### @time_on Decorator Parameters
 - `name`: Task name (must be unique)
@@ -226,15 +413,21 @@ async def async_timed_task():
 - `pattern`: Regular expression pattern
 - `priority`: Priority (default: 1)
 
-## 🧪 Testing
+## 4. Testing & Validation
 
-### Run All Tests
+### Run Tests
 ```bash
-# Run complete test suite
+# Run all tests
 python -m pytest tests/ -v
+
+# Run specific test modules
+python -m pytest tests/test_basic.py -v
+python -m pytest tests/test_core_integration.py -v
+python -m pytest tests/test_integration.py -v
+python -m pytest tests/test_priority_queue.py -v
 ```
 
-### Manual Testing
+### Function Validation Examples
 ```python
 import asyncio
 from nucleus.dispatcher import *
@@ -253,34 +446,59 @@ async def test_all():
     print(await rd.match_content("Hello World"))
 
 asyncio.run(test_all())
+
+# Additional framework tests
+import asyncio
+
+async def extended_tests():
+    # Framework integration test
+    from nucleus import enable_framework_integration
+    enable_framework_integration()
+    
+    # Dependency injection test
+    from nucleus import get_dependency_container
+    container = get_dependency_container()
+    print(f"Registered services: {len(container.services)}")
+    
+    # Event system test with priority
+    dispatcher = EventDispatcher()
+    result = await dispatcher.trigger_event("test_event", "test_data", priority=1)
+    print(f"Event system test: {result}")
+
+asyncio.run(extended_tests())
 ```
 
-## 📝 Debugging Tips
+## 5. Debugging Tips
 
 1. **View registered tasks**: Task list will be displayed when scheduler starts
 2. **Task execution logs**: Execution information will be output when each task runs
 3. **Error handling**: Framework will catch and display exceptions during task execution
 4. **Priority debugging**: Observe task execution order by setting different priority values
+5. **Dependency injection debugging**: Use `get_dependency_container()` to view registered services
+6. **Call chain debugging**: Use interceptors to record detailed execution flow
 
-## 🤝 Contributing
+## 6. Contributing
 
 Issues and Pull Requests are welcome!
 
-## 📄 License
+## 7. License
 
 MIT License
 
-## 🔗 Document Navigation
+## 8. Documentation System
 
-### Framework Documentation
-- **Main Documentation**: [EN_README.md](EN_README.md) | [README.md](README.md)
-- **API Reference**: [API_REFERENCE_EN.md](API_REFERENCE_EN.md) | [API_REFERENCE.md](API_REFERENCE.md)
-- **Best Practices**: [BEST_PRACTICES_EN.md](BEST_PRACTICES_EN.md) | [BEST_PRACTICES.md](BEST_PRACTICES.md)
-- **Production Guide**: [PRODUCTION_DEPLOYMENT_GUIDE_EN.md](PRODUCTION_DEPLOYMENT_GUIDE_EN.md) | [PRODUCTION_DEPLOYMENT_GUIDE.md](PRODUCTION_DEPLOYMENT_GUIDE.md)
-- **Test Guide**: [RUN_TESTS_EN.md](RUN_TESTS_EN.md) | [RUN_TESTS.md](RUN_TESTS.md)
+### Core Documentation
+- **Main Documentation**: [EN_README.md](EN_README.md) | [README.md](README.md) - Framework introduction and quick start
+- **API Reference**: [API_REFERENCE_EN.md](API_REFERENCE_EN.md) | [API_REFERENCE.md](API_REFERENCE.md) - Complete API documentation
+- **Best Practices**: [BEST_PRACTICES_EN.md](BEST_PRACTICES_EN.md) | [BEST_PRACTICES.md](BEST_PRACTICES.md) - Development guidelines
 
-### Quick Links
-- [English API Reference](API_REFERENCE_EN.md) - Complete API documentation
-- [English Best Practices](BEST_PRACTICES_EN.md) - Development guidelines
-- [English Production Guide](PRODUCTION_DEPLOYMENT_GUIDE_EN.md) - Deployment instructions
-- [English Test Guide](RUN_TESTS_EN.md) - Testing documentation
+### Deployment & Testing
+- **Production Guide**: [PRODUCTION_DEPLOYMENT_GUIDE_EN.md](PRODUCTION_DEPLOYMENT_GUIDE_EN.md) | [PRODUCTION_DEPLOYMENT_GUIDE.md](PRODUCTION_DEPLOYMENT_GUIDE.md) - Deployment instructions
+- **Test Guide**: [RUN_TESTS_EN.md](RUN_TESTS_EN.md) | [RUN_TESTS.md](RUN_TESTS.md) - Testing documentation
+- **PyPI Upload Guide**: [PYPI_UPLOAD_GUIDE.md](PYPI_UPLOAD_GUIDE.md) - Package publishing guide
+
+### Usage Examples
+- **Complete Demo**: `complete_demo.py` - Full framework feature demonstration
+- **Quick Start**: `examples/quick_start_example.py` - Quick start example
+- **Dependency Injection**: `examples/on_di_example.py` - Decorator + dependency injection example
+- **Priority Queue**: `examples/priority_queue_example.py` - Queue system demonstration

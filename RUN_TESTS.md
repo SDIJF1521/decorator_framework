@@ -1,6 +1,6 @@
 # 测试运行指南
 
-## 🌐 文档语言
+## 文档语言
 - [English Version](RUN_TESTS_EN.md) - 英文测试指南
 - [中文版本](RUN_TESTS.md) - 当前文档（中文测试指南）
 
